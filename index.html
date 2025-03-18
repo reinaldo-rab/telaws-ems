@@ -285,9 +285,6 @@
                 return cleaned.slice(6, 12); // Extrai DD HH MM (6 caracteres: posições 6-11)
             };
 
-            const start = formatTimestamp(state.validityStart);
-            const end = formatTimestamp(state.validityEnd);
-
             // Montagem da origem
             let origin = '';
             if (state.infoSource.includes('REP')) {
@@ -359,9 +356,6 @@
             if (!state.isEditingMsg) state.manualMsg = msg;
 
             // Atualizar botões de tempo ativos
-            document.querySelectorAll('[data-minutes]').forEach(btn => {
-                btn.classList.toggle('active', parseInt(btn.dataset.minutes) === state.duration);
-            });
         };
 
         document.getElementById('repAC').addEventListener('input', (e) => {
@@ -389,17 +383,6 @@
             });
         });
 
-        document.querySelectorAll('[data-minutes]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                handleTimeSelection(parseInt(e.target.dataset.minutes));
-            });
-        });
-
-        document.getElementById('customMinutes').addEventListener('input', (e) => {
-            handleTimeSelection(parseInt(e.target.value) || 0);
-        });
-
-
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('input', (e) => {
                 const id = e.target.id;
@@ -419,8 +402,6 @@
         });
 
         // Inicialização
-        document.getElementById('validityStart').value = state.validityStart;
-        document.getElementById('validityStart').min = new Date().toISOString().slice(0, 16);
         updateUI();
     </script>
 </body>
