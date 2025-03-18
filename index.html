@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Cortante de Vento</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            background-color: #f5f5f5;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            margin-top: 20px;
+        }
+
+        h2,
+        h3,
+        h5{
+            margin: 0 0 15px 0;
+            color: #1a1a1a;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+            color: #374151;
+        }
+
+        input,
+        textarea {
+            width: 80%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background-color: #f3f4f6;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .preview {
+            background-color: #;
+            padding: 1rem;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            margin: 0rem 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .info-box {
+            background-color: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+
+        }
+
+        button.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        p {
+            margin: 0px;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h2>Aviso de Cortante de Vento - SBAR</h2>
+
+        <form id="windShearForm">
+            <!-- Mensagem Codificada -->
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h5>Mensagem Codificada</h5>
+                    <button type="button" id="editMsgBtn">Editar</button>
+                </div>
+                <pre class="preview" id="messagePreview"></pre>
+                <textarea class="hidden" id="manualMsg"></textarea>
+            </div>
+
+            <div class="form-row">
+            
+            <!-- Fenômeno -->
+            <div class="form-group">
+                <label>Fenômeno</label>
+                <div class="button-group" id="phenomenon">
+                    <button type="button" data-value="WS" class="active">WS</button>
+                    <button type="button" data-value="MBST">MBST</button>
+                </div>
+            </div>
+            <!-- Validade -->
+            <div class="form-group">
+                <label>Validade</label>
+                <div class="grid">
+                    <input type="datetime-local" id="validityStart">
+                    <input type="datetime-local" id="validityEnd" readonly>
+                </div>
+                <div class="button-group">
+                    <button type="button" data-minutes="30">30 Min</button>
+                    <button type="button" data-minutes="60">60 Min</button>
+                    <button type="button" data-minutes="90">90 Min</button>
+                    <button type="button" data-minutes="120">120 Min</button>
+                    <input type="number" id="customMinutes" placeholder="Min" style="width: 80px;">
+                </div>
+            </div>
+            </div>
+
+            <div class="form-row">
+
+                <!-- Localização -->
+                <div class="form-group">
+                    <label>Localização</label>
+                    <div class="button-group" id="localization">
+                        <button type="button" data-value="APCH">APCH</button>
+                        <button type="button" data-value="CLIMB-OUT">CLIMB-OUT</button>
+                    </div>
+                    <input type="text" id="rwy" placeholder="RWY">
+                </div>
+
+                <!-- Severidade (WS only) -->
+                <div class="form-group" id="severityGroup">
+                    <label>Severidade</label>
+                    <div class="button-group" id="severity">
+                        <button type="button" data-value="MOD">MOD</button>
+                        <button type="button" data-value="SEV" class="active">SEV</button>
+                    </div>
+                </div>
+
+                <!-- Origem -->
+                <div class="form-group">
+                    <label>Origem</label>
+                    <div class="button-group" id="infoSource">
+                        <button type="button" data-value="REP">REP</button>
+                        <button type="button" data-value="OBS">OBS</button>
+                        <button type="button" data-value="FCST">FCST</button>
+                    </div>
+
+                    <!-- Campos REP -->
+                    <div id="repFields" class="hidden">
+                        <div class="form-row">
+                            <div>
+                                <label>REP AT (HHMM)</label>
+                                <input type="text" id="repTime" maxlength="4" placeholder="1210">
+                            </div>
+                            <div>
+                                <label>Aeronave</label>
+                                <input type="text" id="repAC" maxlength="8" placeholder="B747">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campos OBS -->
+                    <div id="obsFields" class="hidden">
+                        <label>OBS AT (HH:MM)</label>
+                        <input type="time" id="obsAt">
+                    </div>
+                </div>
+            </div>
+            <!-- Vento e Medidas -->
+            <div class="grid">
+                <div>
+                    <label>Vento Superfície (KT)</label>
+                    <input type="text" id="surfaceWind">
+                </div>
+                <div>
+                    <label>Perda (LOSS KT)</label>
+                    <input type="text" id="loss">
+                </div>
+                <div>
+                    <label>Ganho (GAIN KT)</label>
+                    <input type="text" id="gain">
+                </div>
+            </div>
+
+
+            <!-- Ações -->
+            <div class="button-group">
+                <button type="button" style="background-color: #3b82f6; color: white;">Notificar o Previsor</button>
+                <button type="button" style="background-color: #f63b3b; color: white;">Sair</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const state = {
+            phenomenon: 'WS',
+            location: 'SBAR',
+            validityStart: new Date().toISOString().slice(0, 16),
+            validityEnd: '',
+            severity: 'SEV',
+            localization: [],
+            rwy: '',
+            infoSource: [],
+            repTime: '',
+            repAC: '',
+            obsAt: '',
+            surfaceWind: '',
+            loss: '',
+            gain: '',
+            duration: null,
+            isEditingMsg: false,
+            manualMsg: ''
+        };
+
+        const handleTimeSelection = (minutes) => {
+            state.duration = minutes;
+            calculateValidityEnd();
+            updateUI();
+        };
+
+        // Helpers
+        const updateState = (key, value) => {
+            // Forçar maiúsculas no campo da aeronave
+            if (key === 'repAC') value = value.toUpperCase();
+            state[key] = value;
+            updateUI();
+            calculateValidityEnd();
+        };
+
+
+        // Função auxiliar no cálculo
+        const calculateValidityEnd = () => {
+            if (state.validityStart && state.duration) {
+                const startDate = new Date(state.validityStart);
+                const endDate = new Date(startDate.getTime() + state.duration * 60000);
+
+                // Formata para YYYY-MM-DDTHH:mm
+                const pad = n => n.toString().padStart(2, '0');
+                state.validityEnd =
+                    endDate.getFullYear() + '-' +
+                    pad(endDate.getMonth() + 1) + '-' +
+                    pad(endDate.getDate()) + 'T' +
+                    pad(endDate.getHours()) + ':' +
+                    pad(endDate.getMinutes());
+
+                document.getElementById('validityEnd').value = state.validityEnd;
+            }
+        };
+
+        // Geração da Mensagem
+        const generateMessage = () => {
+            if (state.isEditingMsg) return state.manualMsg;
+
+            const formatTimestamp = (datetime) => {
+                if (!datetime) return '';
+                const cleaned = datetime.replace(/[-:T]/g, '');
+                return cleaned.slice(6, 12); // Extrai DD HH MM (6 caracteres: posições 6-11)
+            };
+
+            const start = formatTimestamp(state.validityStart);
+            const end = formatTimestamp(state.validityEnd);
+
+            // Montagem da origem
+            let origin = '';
+            if (state.infoSource.includes('REP')) {
+                origin = `REP AT ${state.repTime || 'HHMM'} ${state.repAC || 'ACFT'}`;
+            } else if (state.infoSource.includes('OBS')) {
+                origin = state.obsAt ? `OBS AT ${state.obsAt.replace(':', '')}` : 'OBS';
+            } else if (state.infoSource.includes('FCST')) {
+                origin = 'FCST';
+            }
+
+            // Localização + pista
+            const locParts = [...state.localization];
+            if (state.rwy) locParts.push(`RWY${state.rwy}`);
+            const loc = locParts.join(' ');
+
+            // Linhas da mensagem
+            const messageParts = [];
+
+            // Primeira linha (fixa)
+            messageParts.push(
+                `${state.location} WS WRNG 4 ${start} VALID TL ${end}`
+            );
+
+            // Segunda linha (MBST/WS + localização)
+            messageParts.push(
+                state.phenomenon === 'MBST'
+                    ? `MBST IN ${loc} ${origin}`
+                    : `${state.severity} WS IN ${loc} ${origin}`
+            );
+
+            // SFC WIND (condicional)
+            if (state.surfaceWind.trim()) {
+                messageParts.push(`SFC WIND: ${state.surfaceWind}KT`);
+            }
+
+            // Loss/Gain (condicional)
+            if (state.loss.trim() || state.gain.trim()) {
+                messageParts.push(
+                    `LOSS: ${state.loss.trim() || '--'}KT GAIN: ${state.gain.trim() || '--'}KT`
+                );
+            }
+
+            return messageParts.join('\n');
+        };
+        // Atualização da UI
+        const updateUI = () => {
+            // Atualizar botões ativos
+            document.querySelectorAll('[data-value]').forEach(btn => {
+                const group = btn.closest('.button-group').id;
+                const isActive = group === 'phenomenon' ? state[group] === btn.dataset.value :
+                    group === 'severity' ? state.severity === btn.dataset.value :
+                        state[group].includes(btn.dataset.value);
+                btn.classList.toggle('active', isActive);
+            });
+
+            // Atualizar campos condicionais
+            document.getElementById('severityGroup').style.display =
+                state.phenomenon === 'WS' ? 'block' : 'none';
+
+            document.getElementById('repFields').classList.toggle('hidden',
+                !state.infoSource.includes('REP'));
+
+            document.getElementById('obsFields').classList.toggle('hidden',
+                !state.infoSource.includes('OBS') || state.infoSource.includes('REP'));
+
+            // Atualizar mensagem
+            const msg = generateMessage();
+            document.getElementById('messagePreview').textContent = msg;
+            if (!state.isEditingMsg) state.manualMsg = msg;
+
+            // Atualizar botões de tempo ativos
+            document.querySelectorAll('[data-minutes]').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.minutes) === state.duration);
+            });
+        };
+
+        document.getElementById('repAC').addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+            updateState('repAC', e.target.value);
+        });
+
+        // Event Listeners
+        document.querySelectorAll('.button-group button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const group = e.target.closest('.button-group').id;
+                const value = e.target.dataset.value;
+
+                if (group === 'phenomenon') {
+                    state.phenomenon = value;
+                } else if (group === 'severity') {
+                    state.severity = value;
+                } else if (group === 'infoSource') {
+                    state.infoSource = [value];
+                } else if (group === 'localization') {
+                    state.localization = [value];
+                }
+
+                updateUI();
+            });
+        });
+
+        document.querySelectorAll('[data-minutes]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                handleTimeSelection(parseInt(e.target.dataset.minutes));
+            });
+        });
+
+        document.getElementById('customMinutes').addEventListener('input', (e) => {
+            handleTimeSelection(parseInt(e.target.value) || 0);
+        });
+
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const id = e.target.id;
+                state[id] = e.target.value;
+                updateUI();
+            });
+        });
+
+        document.getElementById('editMsgBtn').addEventListener('click', () => {
+            state.isEditingMsg = !state.isEditingMsg;
+            document.getElementById('manualMsg').classList.toggle('hidden', !state.isEditingMsg);
+            document.getElementById('messagePreview').classList.toggle('hidden', state.isEditingMsg);
+            if (state.isEditingMsg) {
+                document.getElementById('manualMsg').value = state.manualMsg;
+            }
+            updateUI();
+        });
+
+        // Inicialização
+        document.getElementById('validityStart').value = state.validityStart;
+        document.getElementById('validityStart').min = new Date().toISOString().slice(0, 16);
+        updateUI();
+    </script>
+</body>
+
+</html>
