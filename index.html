@@ -304,15 +304,11 @@
             const messageParts = [];
 
               
-            // Primeiras linhas (fixa)
+            // Primeira linha (fixa)
             messageParts.push(
                 `[REPORTE WS - SBAR]`
             );
             
-            messageParts.push(
-                `${state.location} ... `
-            );
-
             // Segunda linha (MBST/WS + localização)
             messageParts.push(
                 state.phenomenon === 'MBST'
