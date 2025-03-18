@@ -80,9 +80,11 @@
             background-color: #e0f2fe;
             padding: 1rem;
             border-radius: 4px;
-            white-space: pre-wrap;
+            white-space: pre-line;
+            /* Alterado para pre-line */
             font-family: monospace;
             margin: 0rem 0;
+            line-height: 1.5;
         }
 
         .grid {
@@ -123,7 +125,7 @@
             <!-- Mensagem Codificada -->
             <div class="form-group">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h5>Resumo</h5>
+                    <h5>Resumo do Reporte</h5>
                     <button type="button" id="editMsgBtn">Editar</button>
                 </div>
                 <pre class="preview" id="messagePreview"></pre>
@@ -279,56 +281,40 @@
         const generateMessage = () => {
             if (state.isEditingMsg) return state.manualMsg;
 
-            const formatTimestamp = (datetime) => {
-                if (!datetime) return '';
-                const cleaned = datetime.replace(/[-:T]/g, '');
-                return cleaned.slice(6, 12); // Extrai DD HH MM (6 caracteres: posições 6-11)
-            };
+            // Nova formatação do reporte
+            let report = [];
 
-            // Montagem da origem
-            let origin = '';
+            // Linha 1: Fenômeno
+            const severityPart = state.phenomenon === 'WS' ? ` (${state.severity})` : '';
+            report.push(`FENÔMENO: ${state.phenomenon}${severityPart}`);
+
+            // Linha 2: Origem
+            let originLine = 'ORIGEM: ';
             if (state.infoSource.includes('REP')) {
-                origin = `REP AT ${state.repTime || 'HHMM'} ${state.repAC || 'ACFT'}`;
+                originLine += `REP AT ${state.repTime || 'HHMM'}`;
+                if (state.repAC) originLine += ` | AERONAVE: ${state.repAC}`;
             } else if (state.infoSource.includes('OBS')) {
-                origin = state.obsAt ? `OBS AT ${state.obsAt.replace(':', '')}` : 'OBS';
-            } else if (state.infoSource.includes('FCST')) {
-                origin = 'FCST';
+                originLine += `OBS AT ${state.obsAt.replace(':', '') || 'HHMM'}`;
+            }
+            report.push(originLine);
+
+            // Linha 3: Localização
+            let locationLine = 'LOCALIZAÇÃO: ';
+            locationLine += state.localization.join(' ');
+            if (state.rwy) locationLine += ` RWY${state.rwy}`;
+            report.push(locationLine);
+
+            // Linha 4: Dados
+            const dataParts = [];
+            if (state.surfaceWind) dataParts.push(`SFC WIND ${state.surfaceWind}KT`);
+            if (state.loss) dataParts.push(`LOSS ${state.loss}KT`);
+            if (state.gain) dataParts.push(`GAIN ${state.gain}KT`);
+
+            if (dataParts.length > 0) {
+                report.push(`DADOS: ${dataParts.join(' | ')}`);
             }
 
-            // Localização + pista
-            const locParts = [...state.localization];
-            if (state.rwy) locParts.push(`RWY${state.rwy}`);
-            const loc = locParts.join(' ');
-
-            // Linhas da mensagem
-            const messageParts = [];
-
-              
-            // Primeira linha (fixa)
-            messageParts.push(
-                `[REPORTE WS - SBAR]`
-            );
-            
-            // Segunda linha (MBST/WS + localização)
-            messageParts.push(
-                state.phenomenon === 'MBST'
-                    ? `MBST IN ${loc} ${origin}`
-                    : `${state.severity} WS IN ${loc} ${origin}`
-            );
-
-            // SFC WIND (condicional)
-            if (state.surfaceWind.trim()) {
-                messageParts.push(`SFC WIND: ${state.surfaceWind}KT`);
-            }
-
-            // Loss/Gain (condicional)
-            if (state.loss.trim() || state.gain.trim()) {
-                messageParts.push(
-                    `LOSS: ${state.loss.trim() || '--'}KT GAIN: ${state.gain.trim() || '--'}KT`
-                );
-            }
-
-            return messageParts.join('\n');
+            return report.join('\n');
         };
         // Atualização da UI
         const updateUI = () => {
