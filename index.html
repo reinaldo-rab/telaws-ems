@@ -303,7 +303,12 @@
             // Linhas da mensagem
             const messageParts = [];
 
-            // Primeira linha (fixa)
+              
+            // Primeiras linhas (fixa)
+            messageParts.push(
+                `[REPORTE WS - SBAR]`
+            );
+            
             messageParts.push(
                 `${state.location} ... `
             );
